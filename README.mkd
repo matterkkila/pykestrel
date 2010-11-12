@@ -1,0 +1,41 @@
+A Python Kestrel library
+========================
+
+This is a simple client library for the [kestrel queue system](https://github.com/robey/kestrel).  It supports the entire [documented protocol](https://github.com/robey/kestrel/blob/master/docs/guide.md).
+
+This library extends the Client class in the  python-memcached library to add support for the non-memcache calls that kestrel supports like: config, reload, and shutdown.
+
+Examples
+--------
+
+Adding an job to the queue:
+
+<pre><code>import kestrel
+
+q = kestrel.Client(servers=['127.0.0.1:22133'], queue='test_queue')
+q.add('some test job')
+q.close() # disconnect the client
+</pre></code>
+
+Read a job from the queue:
+
+<pre><code>job = q.get()
+</pre></code>
+
+Peek at the next job in line:
+
+<pre><code>job = q.peek()
+</pre></code>
+
+Reliably read a set of jobs from the queue:
+
+<pre><code>while True:
+    job = q.next(timeout=10) # marks the last job as complete and gets a new one, also waits 10 seconds if no jobs are currently in the queue
+    if job is not None:
+        try:
+            #process job
+        except:
+            q.abort() # mark the job as failed.
+
+q.finish() # mark the last job a complete
+</pre></code>
