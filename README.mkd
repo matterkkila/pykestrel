@@ -3,7 +3,12 @@ A Python Kestrel library
 
 This is a simple client library for the [kestrel queue system](https://github.com/robey/kestrel).  It supports the entire [documented protocol](https://github.com/robey/kestrel/blob/master/docs/guide.md).
 
-This library extends the Client class in the  python-memcached library to add support for the non-memcache calls that kestrel supports like: config, reload, and shutdown.
+This library extends the Client class in the python-memcached library to add support for the non-memcache calls that kestrel supports like: config, reload, and shutdown.
+
+WARNING!!!
+----------
+
+You should only send strings through to the queue, if not the python-memcached library will serialize these objects and since kestrel ignores the flags supplied during a set operation, when the object is retrieved from the queue it will not be unserialized.
 
 Examples
 --------

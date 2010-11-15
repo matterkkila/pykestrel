@@ -28,6 +28,11 @@ class Client(object):
     def add(self, data, expire=None):
         """Add a job onto the queue.
 
+        WARNING:  You should only send strings through to the queue, if not
+        the python-memcached library will serialize these objects and since
+        kestrel ignores the flags supplied during a set operation, when the
+        object is retrieved from the queue it will not be unserialized.
+
         :param data: The job itself
         :type data: mixed
         :param expire: The expiration time of the job, if a job doesn't get
