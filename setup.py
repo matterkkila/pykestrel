@@ -3,7 +3,7 @@ from setuptools import setup, find_packages
 
 setup(
     name='pykestrel',
-    version='0.0.2',
+    version='0.0.3',
     description='A python kestrel client',
     long_description='A python kestrel client based on the python-memcached library.',
     keywords='queues kestrel memcached',

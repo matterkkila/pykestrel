@@ -84,9 +84,6 @@ class Test(unittest.TestCase):
     def test_reload(self):
         self.assertEquals(True, self.queue.reload())
 
-    def test_config(self):
-        self.assertTrue(self.queue.config().count('queue \'test\'') > 0)
-
     def test_stats(self):
         self.assertTrue(len(self.queue.stats()) > 0)
         self.assertTrue(self.queue.stats(True).count('queue \'test\'') > 0)

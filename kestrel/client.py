@@ -188,16 +188,6 @@ class Client(object):
         self.__memcache.reload()
         return True
 
-    def config(self):
-        """Get's the config from the kestrel server.
-
-        :return: The text blob of the config
-        :rtype: string
-
-        """
-
-        return self.__memcache.config()
-
     def stats(self, pretty=None):
         """Get statistics in either the pretty (kestrel) format or the
         standard memcache format.
@@ -264,9 +254,6 @@ class KestrelMemcacheClient(memcache.Client):
 
     def pretty_stats(self):
         return self.__read_cmd('DUMP_STATS')
-
-    def config(self):
-        return self.__read_cmd('DUMP_CONFIG')
 
     def version(self):
         data = []
