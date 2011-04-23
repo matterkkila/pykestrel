@@ -4,6 +4,9 @@
 A Kestrel client library.
 """
 
+from collections import defaultdict
+import re
+
 
 import memcache
 
@@ -188,7 +191,50 @@ class Client(object):
         self.__memcache.reload()
         return True
 
-    def stats(self, pretty=None):
+    def stats(self):
+        """Get the stats from the server and parse the results into a python
+           dict.
+
+           {
+               '127.0.0.1:22133': {
+                   'stats': {
+                       'cmd_get': 10,
+                       ...
+                   },
+                   'queues': {
+                       'queue_name': {
+                           'age': 30,
+                           ...
+                       }
+                   }
+               }
+           }
+        """
+
+        server = None
+        _sstats = {}
+        _qstats = {}
+
+        for server, stats in self.raw_stats():
+            server = server.split(' ', 1)[0]
+            for name, stat in stats.iteritems():
+                if not name.startswith('queue_'):
+                    try:
+                        _sstats[name] = long(stat)
+                    except ValueError:
+                        _sstats[name] = stat
+
+        for name, stats in re.findall('queue \'(?P<name>.*?)\' \{(?P<stats>.*?)\}', self.raw_stats(True), re.DOTALL):
+            _stats = {}
+            for stat in [stat.strip() for stat in stats.split('\n')]:
+                if stat.count('='):
+                    (key, value) = stat.split('=')
+                    _stats[key] = long(value)
+            _qstats[name] = _stats
+
+        return (server, dict([('server', _sstats), ('queues', _qstats)]))
+
+    def raw_stats(self, pretty=None):
         """Get statistics in either the pretty (kestrel) format or the
         standard memcache format.
 

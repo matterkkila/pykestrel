@@ -85,8 +85,11 @@ class Test(unittest.TestCase):
         self.assertEquals(True, self.queue.reload())
 
     def test_stats(self):
-        self.assertTrue(len(self.queue.stats()) > 0)
-        self.assertTrue(self.queue.stats(True).count('queue \'test\'') > 0)
+        self.assertTrue(isinstance(self.queue.stats(), tuple))
+
+    def test_raw_stats(self):
+        self.assertTrue(len(self.queue.raw_stats()) > 0)
+        self.assertTrue(self.queue.raw_stats(True).count('queue \'test\'') > 0)
 
     def test_version(self):
         self.assertTrue(self.queue.version().startswith('1.'))
