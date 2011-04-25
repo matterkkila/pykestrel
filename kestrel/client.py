@@ -232,6 +232,9 @@ class Client(object):
                     _stats[key] = long(value)
             _qstats[name] = _stats
 
+        if server is None:
+            return None
+
         return (server, dict([('server', _sstats), ('queues', _qstats)]))
 
     def raw_stats(self, pretty=None):
