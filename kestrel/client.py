@@ -229,7 +229,10 @@ class Client(object):
             for stat in [stat.strip() for stat in stats.split('\n')]:
                 if stat.count('='):
                     (key, value) = stat.split('=')
-                    _stats[key] = long(value)
+                    try:
+                        _stats[key] = long(value)
+                    except ValueError:
+                        _stats[key] = value
             _qstats[name] = _stats
 
         if server is None:
