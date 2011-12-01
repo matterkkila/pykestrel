@@ -9,7 +9,9 @@ import re
 import threading
 
 
+import random
 import memcache
+import types
 
 
 class Client(threading.local):
@@ -312,6 +314,7 @@ class KestrelMemcacheClient(memcache.Client):
 
     """
 
+
     def reload(self):
         for s in self.servers:
             if not s.connect(): continue
@@ -358,3 +361,18 @@ class KestrelMemcacheClient(memcache.Client):
             data.append(line)
 
         return ('\n').join(data)
+
+    def _get_server(self, key):
+        if type(key) == types.TupleType:
+            serverhash, key = key
+        else:
+            serverhash = random.randint(0, len(self.buckets))
+
+        for i in range(memcache.Client._SERVER_RETRIES):
+            server = self.buckets[serverhash % len(self.buckets)]
+            if server.connect():
+                #print "(using server %s)" % server,
+                return server, key
+            serverhash = random.randint(0, len(self.buckets))
+        return None, None
+
