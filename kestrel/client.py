@@ -6,12 +6,13 @@ A Kestrel client library.
 
 from collections import defaultdict
 import re
+import threading
 
 
 import memcache
 
 
-class Client(object):
+class Client(threading.local):
     """Kestrel queue client."""
 
     def __init__(self, servers, queue):
