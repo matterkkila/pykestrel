@@ -5,13 +5,11 @@ A Kestrel client library.
 """
 
 from collections import defaultdict
+import random
 import re
 import threading
 
-
-import random
 import memcache
-import types
 
 
 class Client(threading.local):
@@ -363,15 +361,14 @@ class KestrelMemcacheClient(memcache.Client):
         return ('\n').join(data)
 
     def _get_server(self, key):
-        if type(key) == types.TupleType:
+        if isinstance(key, tuple):
             serverhash, key = key
         else:
             serverhash = random.randint(0, len(self.buckets))
 
-        for i in range(memcache.Client._SERVER_RETRIES):
+        for i in xrange(memcache.Client._SERVER_RETRIES):
             server = self.buckets[serverhash % len(self.buckets)]
             if server.connect():
-                #print "(using server %s)" % server,
                 return server, key
             serverhash = random.randint(0, len(self.buckets))
         return None, None
