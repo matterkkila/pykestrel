@@ -17,30 +17,30 @@ Adding an job to the queue:
 
 <pre><code>import kestrel
 
-q = kestrel.Client(servers=['127.0.0.1:22133'], queue='test_queue')
-q.add('some test job')
+q = kestrel.Client(server='127.0.0.1:22133')
+q.add('test_queue', 'some test job')
 q.close() # disconnect the client
 </pre></code>
 
 Read a job from the queue:
 
-<pre><code>job = q.get()
+<pre><code>job = q.get('test_queue')
 </pre></code>
 
 Peek at the next job in line:
 
-<pre><code>job = q.peek()
+<pre><code>job = q.peek('test_queue')
 </pre></code>
 
 Reliably read a set of jobs from the queue:
 
 <pre><code>while True:
-    job = q.next(timeout=10) # marks the last job as complete and gets a new one, also waits 10 seconds if no jobs are currently in the queue
+    job = q.next('test_queue', timeout=10) # marks the last job as complete and gets a new one, also waits 10 seconds if no jobs are currently in the queue
     if job is not None:
         try:
             #process job
         except:
-            q.abort() # mark the job as failed.
+            q.abort('test_queue') # mark the job as failed.
 
-q.finish() # mark the last job a complete
+q.finish('test_queue') # mark the last job a complete
 </pre></code>
