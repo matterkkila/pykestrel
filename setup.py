@@ -3,7 +3,7 @@ from setuptools import setup, find_packages
 
 setup(
     name='pykestrel',
-    version='0.5.0',
+    version='0.5.1',
     description='A python kestrel client',
     long_description='A python kestrel client based on the python-memcached library.',
     keywords='queues kestrel memcached',
@@ -12,7 +12,7 @@ setup(
     maintainer='Matt Erkkila',
     maintainer_email='matt@matterkkila.com',
     url='https://github.com/matterkkila/pykestrel',
-    download_url='https://github.com/matterkkila/pykestrel/tarball/0.5.0',
+    download_url='https://github.com/matterkkila/pykestrel/tarball/0.5.1',
     license='BSD',
     packages=find_packages(exclude=['ez_setup', 'tests', 'tests.*']),
     include_package_data=True,
