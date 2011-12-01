@@ -12,10 +12,10 @@ import kestrel
 
 
 class Test(unittest.TestCase):
-    server = '10.106.126.12:22133'
+    server = ['127.0.0.1:22133']
 
     def setUp(self):
-        self.queue = kestrel.Client(server=self.server)
+        self.queue = kestrel.Client(servers=self.server)
         self.queue.flush('queue_test')
 
     def test_add(self):

@@ -15,7 +15,7 @@ import memcache
 class Client(threading.local):
     """Kestrel queue client."""
 
-    def __init__(self, server):
+    def __init__(self, servers):
         """Constructor.
 
         :param servers: The list of servers to connect to, really should only
@@ -24,7 +24,7 @@ class Client(threading.local):
 
         """
 
-        self.__memcache = KestrelMemcacheClient(servers=[server])
+        self.__memcache = KestrelMemcacheClient(servers=servers)
 
     def add(self, queue, data, expire=None):
         """Add a job onto the queue.
