@@ -47,6 +47,9 @@ class Client(threading.local):
 
         """
 
+        if not isinstance(data, str):
+            raise TypeError('data must be of type string')
+
         if expire is None:
             expire = 0
 
