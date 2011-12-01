@@ -17,7 +17,7 @@ Adding an job to the queue:
 
 <pre><code>import kestrel
 
-q = kestrel.Client(server='127.0.0.1:22133')
+q = kestrel.Client(servers=['127.0.0.1:22133'])
 q.add('test_queue', 'some test job')
 q.close() # disconnect the client
 </pre></code>
