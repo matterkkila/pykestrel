@@ -15,21 +15,18 @@ import memcache
 class Client(threading.local):
     """Kestrel queue client."""
 
-    def __init__(self, servers, queue):
+    def __init__(self, server):
         """Constructor.
 
         :param servers: The list of servers to connect to, really should only
             be one for a kestrel client;
         :type servers: list
-        :param queue: The name of the key to work against
-        :type queue: string
 
         """
 
-        self.__memcache = KestrelMemcacheClient(servers=servers)
-        self.queue = queue
+        self.__memcache = KestrelMemcacheClient(servers=[server])
 
-    def add(self, data, expire=None):
+    def add(self, queue, data, expire=None):
         """Add a job onto the queue.
 
         WARNING:  You should only send strings through to the queue, if not
@@ -37,6 +34,8 @@ class Client(threading.local):
         kestrel ignores the flags supplied during a set operation, when the
         object is retrieved from the queue it will not be unserialized.
 
+        :param queue: The name of the key to work against
+        :type queue: string
         :param data: The job itself
         :type data: mixed
         :param expire: The expiration time of the job, if a job doesn't get
@@ -53,16 +52,18 @@ class Client(threading.local):
         if expire is None:
             expire = 0
 
-        ret = self.__memcache.set(self.queue, data, expire)
+        ret = self.__memcache.set(queue, data, expire)
 
         if ret == 0:
             return False
 
         return True
 
-    def get(self, timeout=None):
+    def get(self, queue, timeout=None):
         """Get a job off the queue. (unreliable)
 
+        :param queue: The name of the key to work against
+        :type queue: string
         :param timeout: The time to wait for a job if none are on the queue
             when the initial request is made. (seconds)
         :type timeout: int
@@ -71,16 +72,18 @@ class Client(threading.local):
 
         """
 
-        cmd = '%s' % (self.queue)
+        cmd = '%s' % (queue)
 
         if timeout is not None:
             cmd = '%s/t=%d' % (cmd, timeout)
 
         return self.__memcache.get('%s' % (cmd))
 
-    def next(self, timeout=None):
+    def next(self, queue, timeout=None):
         """Marks the last job as compelete and gets the next one.
 
+        :param queue: The name of the key to work against
+        :type queue: string
         :param timeout: The time to wait for a job if none are on the queue
             when the initial request is made. (seconds)
         :type timeout: int
@@ -89,16 +92,18 @@ class Client(threading.local):
 
         """
 
-        cmd = '%s/close' % (self.queue)
+        cmd = '%s/close' % (queue)
 
         if timeout is not None:
             cmd = '%s/t=%d' % (cmd, timeout)
 
         return self.__memcache.get('%s/open' % (cmd))
 
-    def peek(self, timeout=None):
+    def peek(self, queue, timeout=None):
         """Copy a job from the queue, leaving the original in place.
 
+        :param queue: The name of the key to work against
+        :type queue: string
         :param timeout: The time to wait for a job if none are on the queue
             when the initial request is made. (seconds)
         :type timeout: int
@@ -107,44 +112,50 @@ class Client(threading.local):
 
         """
 
-        cmd = '%s/peek' % (self.queue)
+        cmd = '%s/peek' % (queue)
 
         if timeout is not None:
             cmd = '%s/t=%d' % (cmd, timeout)
 
         return self.__memcache.get(cmd)
 
-    def abort(self):
+    def abort(self, queue):
         """Mark a job as incomplete, making it available to another client.
 
+        :param queue: The name of the key to work against
+        :type queue: string
         :return: True on success
         :rtype: boolean
 
         """
 
-        self.__memcache.get('%s/abort' % (self.queue))
+        self.__memcache.get('%s/abort' % (queue))
         return True
 
-    def finish(self):
+    def finish(self, queue):
         """Mark the last job read off the queue as complete on the server.
 
+        :param queue: The name of the key to work against
+        :type queue: string
         :return: True on success
         :rtype: bool
 
         """
 
-        self.__memcache.get('%s/close' % (self.queue))
+        self.__memcache.get('%s/close' % (queue))
         return True
 
-    def delete(self):
+    def delete(self, queue):
         """Delete this queue from the kestrel server.
 
+        :param queue: The name of the key to work against
+        :type queue: string
         :return: True on success, False on error
         :rtype: bool
 
         """
 
-        ret = self.__memcache.delete(self.queue)
+        ret = self.__memcache.delete(queue)
 
         if ret == 0:
             return False
@@ -162,15 +173,17 @@ class Client(threading.local):
         self.__memcache.disconnect_all()
         return True
 
-    def flush(self):
+    def flush(self, queue):
         """Clear out (remove all jobs) in the current queue.
 
+        :param queue: The name of the key to work against
+        :type queue: string
         :return: True
         :rtype: bool
 
         """
 
-        self.__memcache.flush(self.queue)
+        self.__memcache.flush(queue)
         return True
 
     def flush_all(self):
