@@ -157,8 +157,11 @@ class Client(threading.local):
 
         ret = self.__memcache.delete(queue)
 
-        if ret == 0:
-            return False
+        # REMOVED: 12/1/2011 kestrel currently sends END instead of DELETED in response.
+        # so we will ignore the response for now and assume all went correctly to plan
+        # what could go wrong?
+        #if ret == 0:
+        #    return False
 
         return True
 

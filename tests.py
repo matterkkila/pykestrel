@@ -5,51 +5,52 @@ Unit tests for the kestrel library.
 """
 
 
+import re
 import unittest
 
 import kestrel
 
 
 class Test(unittest.TestCase):
-    servers = ['127.0.0.1:22133']
+    server = '10.106.126.12:22133'
 
     def setUp(self):
-        self.queue = kestrel.Client(servers=self.servers, queue='test')
-        self.queue.flush()
+        self.queue = kestrel.Client(server=self.server)
+        self.queue.flush('queue_test')
 
     def test_add(self):
-        self.assertTrue(self.queue.add('test', 100))
+        self.assertTrue(self.queue.add('queue_test', 'test', 100))
 
     def test_get(self):
-        self.assertTrue(self.queue.add('test'))
-        self.assertEquals('test', self.queue.get(timeout=10))
+        self.assertTrue(self.queue.add('queue_test', 'test'))
+        self.assertEquals('test', self.queue.get('queue_test', timeout=10))
 
     def test_get(self):
-        self.assertTrue(self.queue.add('test'))
-        self.assertEquals('test', self.queue.get())
-        self.assertEquals(None, self.queue.get())
+        self.assertTrue(self.queue.add('queue_test', 'test'))
+        self.assertEquals('test', self.queue.get('queue_test'))
+        self.assertEquals(None, self.queue.get('queue_test'))
 
     def test_peek(self):
-        self.assertTrue(self.queue.add('item peek'))
+        self.assertTrue(self.queue.add('queue_test', 'item peek'))
         for i in range(5):
-            self.assertEquals('item peek', self.queue.peek(5))
+            self.assertEquals('item peek', self.queue.peek('queue_test', 5))
 
     def test_next_abort_finish(self):
-        self.assertTrue(self.queue.add('test'))
-        self.assertEquals('test', self.queue.next())
-        self.assertEquals(True, self.queue.abort())
-        self.assertEquals('test', self.queue.next())
-        self.assertEquals(True, self.queue.finish())
-        self.assertEquals(None, self.queue.next())
+        self.assertTrue(self.queue.add('queue_test', 'test'))
+        self.assertEquals('test', self.queue.next('queue_test'))
+        self.assertEquals(True, self.queue.abort('queue_test'))
+        self.assertEquals('test', self.queue.next('queue_test'))
+        self.assertEquals(True, self.queue.finish('queue_test'))
+        self.assertEquals(None, self.queue.next('queue_test'))
 
     def test_next(self):
         for i in range(5):
             item = 'test %d' % (i)
-            self.assertTrue(self.queue.add(item))
+            self.assertTrue(self.queue.add('queue_test', item))
 
         results = []
         while True:
-            next = self.queue.next(timeout=1)
+            next = self.queue.next('queue_test', timeout=1)
             if next is None:
                 break
             results.append(next)
@@ -57,29 +58,24 @@ class Test(unittest.TestCase):
         for i in range(5):
             self.assertTrue('test %d' % (i) in results)
 
-        self.assertEquals(None, self.queue.get())
+        self.assertEquals(None, self.queue.get('queue_test'))
 
     def test_delete(self):
-        self.assertTrue(self.queue.add('test'))
-        self.assertEquals(True, self.queue.delete())
-        self.assertEquals(None, self.queue.get())
+        self.assertTrue(self.queue.add('queue_test', 'test'))
+        self.assertEquals(True, self.queue.delete('queue_test'))
+        self.assertEquals(None, self.queue.get('queue_test'))
 
     def test_flush(self):
-        self.assertTrue(self.queue.add('test'))
-        self.assertEquals(True, self.queue.flush())
-        self.assertEquals(None, self.queue.get())
+        self.assertTrue(self.queue.add('queue_test', 'test'))
+        self.assertEquals(True, self.queue.flush('queue_test'))
+        self.assertEquals(None, self.queue.get('queue_test'))
 
     def test_flush_all(self):
-        alt_queue = kestrel.Client(servers=self.servers, queue='test_alt')
-
-        self.assertTrue(self.queue.add('test'))
-        self.assertTrue(alt_queue.add('test_alt'))
+        self.assertTrue(self.queue.add('test_queue', 'test'))
+        self.assertTrue(self.queue.add('test_alt', 'test_alt'))
         self.assertEquals(True, self.queue.flush_all())
-        self.assertEquals(None, self.queue.get())
-        self.assertEquals(None, alt_queue.get())
-
-        alt_queue.delete()
-        alt_queue.close()
+        self.assertEquals(None, self.queue.get('test_alt'))
+        self.assertEquals(None, self.queue.get('test_queue'))
 
     def test_reload(self):
         self.assertEquals(True, self.queue.reload())
@@ -89,10 +85,11 @@ class Test(unittest.TestCase):
 
     def test_raw_stats(self):
         self.assertTrue(len(self.queue.raw_stats()) > 0)
-        self.assertTrue(self.queue.raw_stats(True).count('queue \'test\'') > 0)
+        self.assertTrue(self.queue.raw_stats(True).count('queue \'queue_test\'') > 0)
 
     def test_version(self):
-        self.assertTrue(self.queue.version().startswith('1.'))
+        m = re.match(r'^[0-9]+\.[0-9]+.*', self.queue.version())
+        self.assertTrue(m != None)
 
     def tearDown(self):
         self.queue.close()
